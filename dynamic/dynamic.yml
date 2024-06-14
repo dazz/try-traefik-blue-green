@@ -1,0 +1,46 @@
+http:
+  routers:
+
+    docker-localhost:
+      rule: Host(`docker.localhost`)
+      service: blue@file
+      tls:
+        domains:
+          - main: "docker.localhost"
+            sans:
+              - "*.docker.localhost"
+
+    blue-docker-localhost:
+      rule: Host(`blue.docker.localhost`)
+      service: blue@file
+      tls:
+        domains:
+          - main: "docker.localhost"
+            sans:
+              - "*.docker.localhost"
+
+    green-docker-localhost:
+      rule: Host(`green.docker.localhost`)
+      service: green@file
+      tls:
+        domains:
+          - main: "docker.localhost"
+            sans:
+              - "*.docker.localhost"
+
+
+  services:
+    blue:
+      loadBalancer:
+        servers:
+          - url: 'http://blue/'
+
+    green:
+      loadBalancer:
+        servers:
+          - url: 'http://green/'
+
+tls:
+  certificates:
+    - certFile: "/etc/certs/local-cert.pem"
+      keyFile: "/etc/certs/local-key.pem"

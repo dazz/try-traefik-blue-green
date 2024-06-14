@@ -1,0 +1,37 @@
+services:
+  traefik:
+    image: traefik:v3.0.1
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./dynamic:/etc/traefik/dynamic:ro
+      - ./certs:/etc/certs:ro
+    command:
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --entryPoints.web.address=:80
+      - --entryPoints.web.http.redirections.entrypoint.to=websecure
+      - --entryPoints.web.http.redirections.entrypoint.scheme=https
+      - --entryPoints.websecure.address=:443
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik=true"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+  blue:
+    image: blue
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  green:
+    image: green
+    deploy:
+      mode: replicated
+      replicas: 2
